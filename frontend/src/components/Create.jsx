@@ -6,6 +6,7 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 const Create = () => {
   const [encuestaId, setEncuestaId] = useState(""); //estado de el id de la encuesta
   const [id, setId] = useState(""); //estado del id "verdadero" de la encuesta (pq tiene dos id)
+  
   const [toast, setToast] = useState({
     //mensajes internos, tost es un "mensaje temporal"
     snackbaropen: false,
@@ -17,15 +18,6 @@ const Create = () => {
   const closesnackbar = (e) => {
     setToast({ snackbaropen: false });
   };
-
-  useEffect(() => {
-    if (localStorage.getItem("encuestaCreada") == 0) {
-      setToast({ snackbaropen: true, msg: "Encuesta Creada", not: "success" });
-      localStorage.removeItem("encuestaCreada");
-    }
-    //console.log(location.origin) //agarra directamente la url de origen ej:https://localhost:5173
-  }, []);
-
 
   const slideTransition = (props) => {
     return <Slide {...props} direction="down" />
@@ -39,6 +31,19 @@ const Create = () => {
       Transition,
     })
   }
+
+  useEffect(() => {
+    try {
+      setEncuestaId(location.href.split("/")[4])
+    } catch (error) {
+      console.log(error)
+    }
+    if (localStorage.getItem("encuestaCreada") == 0) {
+      setToast({ snackbaropen: true, msg: "Encuesta Creada", not: "success" });
+      localStorage.removeItem("encuestaCreada");
+    }
+    //console.log(location.origin) //agarra directamente la url de origen ej:https://localhost:5173
+  }, []);
 
   return (
     <div className="ui-outer">

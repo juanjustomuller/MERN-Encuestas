@@ -17,7 +17,7 @@ const Notificaciones = (props) => {
     >
     
     <Alert onClose={props.close} severity={props.nottype}>
-      {props.msg}
+      {props.message}
     </Alert>
     </Snackbar>
   )

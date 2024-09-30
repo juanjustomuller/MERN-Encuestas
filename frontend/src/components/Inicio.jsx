@@ -14,6 +14,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const Inicio = () => {
+  //const apiUrl = typeof process !== "undefined" ? process.env.REACT_APP_API_URL : "http://localhost:8800/api/v1/encuestas"; 
+  //console.log("API URL:", apiUrl);
   const navigate = useNavigate();
   const [preguntas, setPreguntas] = useState({
     id: uuidv4(),
@@ -22,8 +24,8 @@ const Inicio = () => {
   });
 
   const [campos, setCampos] = useState([
-    {id: uuidv4, opciones: "", error: false},
-    {id: uuidv4, opciones: "", error: false},
+    {id: uuidv4(), opcion: "", error: false},
+    {id: uuidv4(), opcion: "", error: false},
   ]);
 
   const [toast, setToast] = useState({
@@ -41,6 +43,7 @@ const Inicio = () => {
       setToast({ snackbaropen: true, msg: "Encuesta Eliminada", not: "success" });
       localStorage.removeItem("encuestaEliminada");
     }  
+    
   }, [])
 
   const handleClick = (Transition) => () => {
@@ -60,29 +63,32 @@ const Inicio = () => {
     e.preventDefault();
     const preguntaVacia = preguntas.pregunta.trim().length < 4;
     const opcionesVacias = campos.every((obj) => {
-      return obj.opciones.length < 2 
+      return obj.opcion.length > 0 
     });
 
     if(preguntaVacia) {
       setPreguntas({...preguntas, error:true})
     }
-    if(opcionesVacias) {
+    if(!opcionesVacias) {
       setCampos([
         ...campos.map((obj) => {
-          if(obj.opciones == ''){
+          if(obj.opcion == ''){
             return {...obj, error: true}
           } else return obj;
         })
       ]);
     } else {
-      const data = {pregunta: preguntas, opciones: campos};
-      axios.post(process.env.API_URL, data)
+      const data = {id: uuidv4(),pregunta: preguntas.pregunta, opciones: campos};
+      console.log(data);
+      axios.post('http://localhost:8800/api/v1/encuestas', data)
       .then((res) => {
+        localStorage.setItem("encuestaCreada", 0)
         handleClick(slideTransition);
-        navigate(`/new/${preguntas.id}`)
+        navigate(`/new/${res.data.id}`)
+        //console.log("res.data.id",res.data.id)
       })
       .catch((err) => console.log(err))
-      localStorage.setItem("encuestaCreada", 0)
+      
     }
   }
 
@@ -111,7 +117,7 @@ const Inicio = () => {
   const handleAgregarCampos = () => {
     setCampos([
       ...campos,
-      {id: uuidv4, opciones: "", error: false}
+      {id: uuidv4(), opcion: "", error: false}
     ])
     setToast({
       snackbaropen: true,
@@ -164,7 +170,7 @@ const Inicio = () => {
                 id={preguntas.id}
                 name="pregunta"
                 multiline={true}
-                rows={3}
+                minRows={3}
                 className=" w-100 py-4 bg-light rounded-lg px-3 outline-none  border border-gray "
                 placeholder="Cuál es tu comida favorita?"
                 value={preguntas.pregunta}
@@ -188,7 +194,7 @@ const Inicio = () => {
                     <div className="">
                       <TextField
                         {...(showError(
-                          item.opciones,
+                          item.opcion,
                           item.error
                         ) && {
                           ...{
@@ -197,10 +203,10 @@ const Inicio = () => {
                           },
                         })}
                         id={item.id}
-                        name="opciones"
+                        name="opcion"
                         className=" py-3 rounded-lg px-3 bg-light inputfield focus-shadow  focus-outline-none  border "
                         placeholder={'Opción' + (index + 1)}
-                        value={item.opciones}
+                        value={item.opcion}
                         onChange={(event) =>
                           handleCambiarCampo(item.id, event)
                         }
